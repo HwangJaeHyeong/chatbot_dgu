@@ -1,0 +1,1 @@
+export const TTS_SPEAKER_GENDER_TYPE = { MALE: 0, FEMALE: 1 }
