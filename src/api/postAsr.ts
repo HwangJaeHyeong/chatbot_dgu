@@ -2,7 +2,9 @@ import { axiosPOST } from 'api/base'
 import { AxiosRequestConfig } from 'axios'
 import { useMutation, UseMutationOptions } from 'react-query'
 
-export type PostAsrRequestType = {}
+export type PostAsrRequestType = {
+  file: any
+}
 
 export type PostAsrResponseType = {}
 
