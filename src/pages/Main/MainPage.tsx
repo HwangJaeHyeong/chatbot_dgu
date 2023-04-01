@@ -11,11 +11,14 @@ type MainPageProps = {
 export const MainPage: FC<MainPageProps> = ({ className }) => {
   const [stream, setStream] = useState<any>(null)
   const [blob, setBlob] = useState<any>(null)
+  const [dialog, setDialog] = useState<string[]>([])
+  const [response, setResponse] = useState<string>('')
+  const [ttsAudio, setTtsAudio] = useState<any>()
   const refVideo = useRef<any>(null)
   const recorderRef = useRef<any>(null)
 
   const handleRecording = async () => {
-    const cameraStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true })
+    const audioStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true })
 
     const options: any = {
       recorderType: StereoAudioRecorder,
@@ -23,8 +26,8 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
       video: false,
       audio: true,
     }
-    setStream(cameraStream)
-    recorderRef.current = new RecordRTC(cameraStream, options)
+    setStream(audioStream)
+    recorderRef.current = new RecordRTC(audioStream, options)
     recorderRef.current.startRecording()
   }
 
@@ -34,14 +37,14 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
     })
   }
 
-  const handleSave = () => {}
+  const onClickResetButton = () => {
+    setDialog([])
+  }
 
   useEffect(() => {
     if (!refVideo.current) {
       return
     }
-
-    // refVideo.current.srcObject = stream;
   }, [stream, refVideo])
 
   useEffect(() => {
@@ -59,26 +62,88 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
 
       // eslint-disable-next-line no-undef
       fetch(`${baseURL}/asr/asr`, requestOptions)
-        .then((response) => response.text())
+        .then((response) => {
+          response.text().then((res) => {
+            let text = JSON.parse(res)[0].transcription
+            setDialog((prev) => [...prev, text])
+
+            var myHeaders = new Headers()
+            myHeaders.append('Content-Type', 'application/json')
+
+            var raw = JSON.stringify({
+              input: text,
+              dialog,
+            })
+
+            var requestOptions: any = {
+              method: 'POST',
+              headers: myHeaders,
+              body: raw,
+              redirect: 'follow',
+            }
+
+            fetch(`${baseURL}/chat1/chat`, requestOptions)
+              .then((response) =>
+                response.text().then((res2) => {
+                  let text2 = JSON.parse(res2).output
+                  setResponse(text2)
+                  setDialog((prev) => [...prev, text2])
+
+                  var myHeaders = new Headers()
+                  myHeaders.append('Content-Type', 'application/json')
+
+                  var raw = JSON.stringify({
+                    text: text2,
+                    speaker: '0',
+                  })
+
+                  var requestOptions: any = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    body: raw,
+                    redirect: 'follow',
+                  }
+
+                  fetch(`${baseURL}/tts/tts`, requestOptions)
+                    .then((response) => {
+                      response.text().then((res) => {
+                        const blob = new Blob([res])
+                        const url = URL.createObjectURL(blob)
+
+                        let tempLink = document.createElement('a')
+                        tempLink.href = url
+                        tempLink.setAttribute('download', 'test.wav')
+                        tempLink.click()
+
+                        const file = new File([blob], 'test.wav')
+                        console.log({ file })
+                        setTtsAudio(url)
+                      })
+                    })
+                    .then((result) => console.log(result))
+                    .catch((error) => console.log('error', error))
+                })
+              )
+              .then((result) => console.log(result))
+              .catch((error) => console.log('error', error))
+          })
+        })
         .then((result) => console.log(result))
         .catch((error) => console.log('error', error))
     }
   }, [blob])
 
+  console.log(ttsAudio)
+
   return (
     <Root className={className}>
-      <button onClick={handleRecording}>start</button>
-      <button onClick={handleStop}>stop</button>
-      <button onClick={handleSave}>save</button>
-      {blob && (
-        <audio
-          src={URL.createObjectURL(blob)}
-          controls
-          autoPlay
-          ref={refVideo}
-          style={{ width: '700px', margin: '1em' }}
-        />
-      )}
+      <div>
+        <button onClick={handleRecording}>start</button>
+        <button onClick={handleStop}>stop</button>
+        <button onClick={onClickResetButton}>reset</button>
+      </div>
+      <p>{response}</p>
+      {ttsAudio && <audio src={ttsAudio} controls autoPlay />}
     </Root>
   )
 }
