@@ -51,6 +51,7 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "^18.14.0"
+    "@types/node": "^18.14.0",
+    "@types/react-mic": "^12.4.3"
   }
 }
