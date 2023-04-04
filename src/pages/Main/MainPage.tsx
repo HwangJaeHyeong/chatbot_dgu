@@ -14,6 +14,7 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
   const [dialog, setDialog] = useState<string[]>([])
   const [response, setResponse] = useState<string>('')
   const [ttsAudio, setTtsAudio] = useState<any>()
+  const [inputValue, setInputValue] = useState<string>('')
   const refVideo = useRef<any>(null)
   const recorderRef = useRef<any>(null)
 
@@ -109,12 +110,6 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
                       response.text().then((res) => {
                         const blob = new Blob([res])
                         const url = URL.createObjectURL(blob)
-
-                        let tempLink = document.createElement('a')
-                        tempLink.href = url
-                        tempLink.setAttribute('download', 'test.wav')
-                        tempLink.click()
-
                         const file = new File([blob], 'test.wav')
                         console.log({ file })
                         setTtsAudio(url)
@@ -133,7 +128,60 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
     }
   }, [blob])
 
-  console.log(ttsAudio)
+  const onClickSubmit = () => {
+    let text = inputValue
+    setDialog((prev) => [...prev, text])
+
+    var myHeaders = new Headers()
+    myHeaders.append('Content-Type', 'application/json')
+
+    var raw = JSON.stringify({
+      input: text,
+      dialog,
+    })
+
+    var requestOptions: any = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow',
+    }
+
+    fetch(`${baseURL}/chat1/chat`, requestOptions)
+      .then((response) =>
+        response.text().then((res2) => {
+          let text2 = JSON.parse(res2).output
+          setResponse(text2)
+          setDialog((prev) => [...prev, text2])
+
+          var myHeaders = new Headers()
+          myHeaders.append('Content-Type', 'application/json')
+
+          var raw = JSON.stringify({
+            text: text2,
+            speaker: '0',
+          })
+
+          var requestOptions: any = {
+            method: 'POST',
+            headers: myHeaders,
+            body: raw,
+            redirect: 'follow',
+          }
+
+          fetch(`${baseURL}/tts/tts`, requestOptions)
+            .then(async (response) => {
+              const audioBlob = await response.blob()
+              const url = URL.createObjectURL(audioBlob)
+              setTtsAudio(url)
+            })
+            .then((result) => console.log(result))
+            .catch((error) => console.log('error', error))
+        })
+      )
+      .then((result) => console.log(result))
+      .catch((error) => console.log('error', error))
+  }
 
   return (
     <Root className={className}>
@@ -141,6 +189,14 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
         <button onClick={handleRecording}>start</button>
         <button onClick={handleStop}>stop</button>
         <button onClick={onClickResetButton}>reset</button>
+      </div>
+      <div>
+        <input
+          onChange={(e) => setInputValue(e.target.value)}
+          value={inputValue}
+          onKeyDown={(e) => e.key === 'Enter' && onClickSubmit()}
+        />
+        <button onClick={onClickSubmit}>submit</button>
       </div>
       <p>{response}</p>
       {ttsAudio && <audio src={ttsAudio} controls autoPlay />}
