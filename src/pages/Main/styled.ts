@@ -1,16 +1,18 @@
-import { Button, Typography } from 'antd'
+import { Button, Spin, Typography } from 'antd'
 import styled from 'styled-components'
 
 export const Root = styled.div`
   width: 100%;
+  height: 100vh;
+  background: black;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 20px;
+  padding-top: calc(12vw + 20px);
 `
 
 export const Container = styled.div`
-  width: 300px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -23,7 +25,12 @@ export const RadioContainer = styled.div`
   gap: 5px;
 `
 
-export const RadioTitleTypo = styled(Typography)``
+export const RadioTitleTypo = styled(Typography)`
+  &&& {
+    font-size: 6vw;
+    color: white;
+  }
+`
 
 export const RadioRowContainer = styled.div`
   display: flex;
@@ -33,12 +40,30 @@ export const RadioRowContainer = styled.div`
   cursor: pointer;
 `
 
-export const RadioRowTypo = styled(Typography)``
+export const RadioRowTypo = styled(Typography)`
+  &&& {
+    font-size: 4vw;
+    color: white;
+  }
+`
 
 export const RadioSubmitButton = styled(Button)`
   width: 100%;
+  margin-top: 10px;
 `
 
 export const MainImg = styled.img`
-  width: 100%;
+  width: calc(100vw - 40px);
+  height: 50vh;
+  object-fit: contain;
 `
+
+export const ResetButton = styled(Button)`
+  width: 20vw;
+  height: 8vw;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+`
+
+export const WaitingTtsProgress = styled(Spin)``

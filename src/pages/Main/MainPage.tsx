@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 import { Radio } from 'antd'
 import { baseURL } from 'api/base'
@@ -15,24 +16,26 @@ import {
   RadioRowTypo,
   RadioSubmitButton,
   RadioTitleTypo,
+  ResetButton,
   Root,
+  WaitingTtsProgress,
 } from './styled'
 
 type MainPageProps = {
   className?: string
 }
 
-type StatusType = 'INIT' | 'WAITING' | 'LISTEN' | 'TELL'
+type StatusType = 'WAITING' | 'LISTEN' | 'WAITING_TTS' | 'TELL'
 
 export const MainPage: FC<MainPageProps> = ({ className }) => {
-  const [genderType, setGenderType] = useState<'0' | '1' | null>(null)
-  const [chatbotType, setChatbotType] = useState<'0' | '1' | null>(null)
+  const [genderType, setGenderType] = useState<'0' | '1'>('0')
+  const [chatbotType, setChatbotType] = useState<'0' | '1'>('0')
   const [blob, setBlob] = useState<any>(null)
   const [dialog, setDialog] = useState<string[]>([])
   const [response, setResponse] = useState<string>('')
   const [ttsAudio, setTtsAudio] = useState<any>()
   const [inputValue, setInputValue] = useState<string>('')
-  const [status, setStatus] = useState<StatusType>('INIT')
+  const [status, setStatus] = useState<StatusType>('WAITING')
   const recorderRef = useRef<any>(null)
 
   const handleStatus = (type: StatusType) => () => {
@@ -56,14 +59,14 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
     recorderRef.current.stopRecording(() => {
       setBlob(recorderRef.current.getBlob())
     })
-    handleStatus('WAITING')()
+    handleStatus('WAITING_TTS')()
   }
 
   const onClickResetButton = () => {
     setDialog([])
-    setGenderType(null)
-    setChatbotType(null)
-    handleStatus('INIT')()
+    setGenderType('0')
+    setChatbotType('0')
+    handleStatus('WAITING')()
   }
 
   useEffect(() => {
@@ -89,10 +92,20 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
             var myHeaders = new Headers()
             myHeaders.append('Content-Type', 'application/json')
 
-            var raw = JSON.stringify({
-              input: text,
-              dialog,
-            })
+            var raw =
+              chatbotType === '0'
+                ? JSON.stringify({
+                    input: text,
+                    dialog,
+                  })
+                : JSON.stringify({
+                    input: text,
+                    agent_state: {
+                      history: dialog,
+                      ontology_flow_num: -1,
+                      abnormal_flag: 0,
+                    },
+                  })
 
             var requestOptions: any = {
               method: 'POST',
@@ -101,7 +114,7 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
               redirect: 'follow',
             }
 
-            fetch(`${baseURL}/chat1/chat`, requestOptions)
+            fetch(`${baseURL}/${chatbotType === '0' ? 'chat1' : 'chat2'}/chat`, requestOptions)
               .then((response) =>
                 response.text().then((res2) => {
                   let text2 = JSON.parse(res2).output
@@ -124,14 +137,12 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
                   }
 
                   fetch(`${baseURL}/tts/tts`, requestOptions)
-                    .then((response) => {
-                      response.text().then((res) => {
-                        const blob = new Blob([res])
-                        const url = URL.createObjectURL(blob)
-                        const file = new File([blob], 'test.wav')
-                        console.log({ file })
-                        setTtsAudio(url)
-                      })
+                    .then(async (response) => {
+                      const audioBlob = await response.blob()
+                      const url = URL.createObjectURL(audioBlob)
+                      const audioElement = new Audio(url)
+                      audioElement.play()
+                      handleStatus('WAITING')()
                     })
                     .then((result) => console.log(result))
                     .catch((error) => console.log('error', error))
@@ -165,7 +176,7 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
       redirect: 'follow',
     }
 
-    fetch(`${baseURL}/chat1/chat`, requestOptions)
+    fetch(`${baseURL}/${chatbotType === '0' ? 'chat1' : 'chat2'}/chat`, requestOptions)
       .then((response) =>
         response.text().then((res2) => {
           let text2 = JSON.parse(res2).output
@@ -192,6 +203,8 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
               const audioBlob = await response.blob()
               const url = URL.createObjectURL(audioBlob)
               setTtsAudio(url)
+              const audioElement = new Audio(url)
+              audioElement.play()
             })
             .then((result) => console.log(result))
             .catch((error) => console.log('error', error))
@@ -202,7 +215,7 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
   }
 
   const mainImgSrc = (() => {
-    if (status === 'INIT') {
+    if (status === 'WAITING_TTS') {
       return Main1Img
     }
     if (status === 'WAITING') {
@@ -219,38 +232,7 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
   return (
     <Root className={className}>
       <Container>
-        {status === 'INIT' && (
-          <>
-            <RadioContainer>
-              <RadioTitleTypo>챗봇의 타입을 선택해주세요.</RadioTitleTypo>
-              <RadioRowContainer onClick={() => setChatbotType('0')}>
-                <RadioRowTypo>타입 1</RadioRowTypo>
-                <Radio name="chatbotTypeRadio" checked={chatbotType === '0'} />
-              </RadioRowContainer>
-              <RadioRowContainer onClick={() => setChatbotType('1')}>
-                <RadioRowTypo>타입 2</RadioRowTypo>
-                <Radio name="chatbotTypeRadio" checked={chatbotType === '1'} />
-              </RadioRowContainer>
-            </RadioContainer>
-            <RadioContainer>
-              <RadioTitleTypo>챗봇의 성별을 선택해주세요.</RadioTitleTypo>
-              <RadioRowContainer onClick={() => setGenderType('0')}>
-                <RadioRowTypo>남성</RadioRowTypo>
-                <Radio name="genderTypeRadio" checked={genderType === '0'} />
-              </RadioRowContainer>
-              <RadioRowContainer onClick={() => setGenderType('1')}>
-                <RadioRowTypo>여성</RadioRowTypo>
-                <Radio name="genderTypeRadio" checked={genderType === '1'} />
-              </RadioRowContainer>
-            </RadioContainer>
-            {genderType && chatbotType && (
-              <RadioSubmitButton type="primary" onClick={handleStatus('WAITING')}>
-                제출
-              </RadioSubmitButton>
-            )}
-          </>
-        )}
-        {status !== 'INIT' && genderType && chatbotType && (
+        {/* {status !== 'INIT' && genderType && chatbotType && (
           <div>
             <div>
               <button onClick={handleRecording}>start</button>
@@ -268,8 +250,32 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
             <p>{response}</p>
             {ttsAudio && <audio src={ttsAudio} controls autoPlay />}
           </div>
-        )}
+        )} */}
+        <ResetButton onClick={onClickResetButton}>초기화</ResetButton>
         <MainImg src={mainImgSrc} />
+        <RadioContainer>
+          <RadioTitleTypo>챗봇의 타입을 선택해주세요.</RadioTitleTypo>
+          <RadioRowContainer onClick={() => setChatbotType('0')}>
+            <RadioRowTypo>타입 1</RadioRowTypo>
+            <Radio name="chatbotTypeRadio" checked={chatbotType === '0'} />
+          </RadioRowContainer>
+          <RadioRowContainer onClick={() => setChatbotType('1')}>
+            <RadioRowTypo>타입 2</RadioRowTypo>
+            <Radio name="chatbotTypeRadio" checked={chatbotType === '1'} />
+          </RadioRowContainer>
+          <RadioTitleTypo>챗봇의 성별을 선택해주세요.</RadioTitleTypo>
+          <RadioRowContainer onClick={() => setGenderType('0')}>
+            <RadioRowTypo>남성</RadioRowTypo>
+            <Radio name="genderTypeRadio" checked={genderType === '0'} />
+          </RadioRowContainer>
+          <RadioRowContainer onClick={() => setGenderType('1')}>
+            <RadioRowTypo>여성</RadioRowTypo>
+            <Radio name="genderTypeRadio" checked={genderType === '1'} />
+          </RadioRowContainer>
+          {status === 'WAITING' && <RadioSubmitButton onClick={handleRecording}>말하기</RadioSubmitButton>}
+          {status === 'LISTEN' && <RadioSubmitButton onClick={handleStop}>듣기</RadioSubmitButton>}
+          {status === 'WAITING_TTS' && <WaitingTtsProgress tip="Loading" />}
+        </RadioContainer>
       </Container>
     </Root>
   )
