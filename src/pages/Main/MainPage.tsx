@@ -32,7 +32,6 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
   const [chatbotType, setChatbotType] = useState<'0' | '1'>('0')
   const [blob, setBlob] = useState<any>(null)
   const [dialog, setDialog] = useState<string[]>([])
-  const [response, setResponse] = useState<string>('')
   const [ttsAudio, setTtsAudio] = useState<any>()
   const [inputValue, setInputValue] = useState<string>('')
   const [status, setStatus] = useState<StatusType>('WAITING')
@@ -117,8 +116,8 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
             fetch(`${baseURL}/${chatbotType === '0' ? 'chat1' : 'chat2'}/chat`, requestOptions)
               .then((response) =>
                 response.text().then((res2) => {
-                  let text2 = JSON.parse(res2).output
-                  setResponse(text2)
+                  let text2 = chatbotType === '0' ? JSON.parse(res2).output : JSON.parse(res2).response
+
                   setDialog((prev) => [...prev, text2])
 
                   var myHeaders = new Headers()
@@ -180,16 +179,22 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
       .then((response) =>
         response.text().then((res2) => {
           let text2 = JSON.parse(res2).output
-          setResponse(text2)
+          let text3 = JSON.parse(res2).response
           setDialog((prev) => [...prev, text2])
 
           var myHeaders = new Headers()
           myHeaders.append('Content-Type', 'application/json')
 
-          var raw = JSON.stringify({
-            text: text2,
-            speaker: genderType,
-          })
+          var raw =
+            chatbotType === '0'
+              ? JSON.stringify({
+                  text: text2,
+                  speaker: genderType,
+                })
+              : JSON.stringify({
+                  text: text3,
+                  speaker: genderType,
+                })
 
           var requestOptions: any = {
             method: 'POST',
@@ -256,11 +261,11 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
         <RadioContainer>
           <RadioTitleTypo>챗봇의 타입을 선택해주세요.</RadioTitleTypo>
           <RadioRowContainer onClick={() => setChatbotType('0')}>
-            <RadioRowTypo>타입 1</RadioRowTypo>
+            <RadioRowTypo>노인 케어 챗봇</RadioRowTypo>
             <Radio name="chatbotTypeRadio" checked={chatbotType === '0'} />
           </RadioRowContainer>
           <RadioRowContainer onClick={() => setChatbotType('1')}>
-            <RadioRowTypo>타입 2</RadioRowTypo>
+            <RadioRowTypo>공황장애 환자 케어 챗봇</RadioRowTypo>
             <Radio name="chatbotTypeRadio" checked={chatbotType === '1'} />
           </RadioRowContainer>
           <RadioTitleTypo>챗봇의 성별을 선택해주세요.</RadioTitleTypo>
