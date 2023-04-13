@@ -15,6 +15,7 @@ import {
   RadioRowContainer,
   RadioRowTypo,
   RadioSubmitButton,
+  RadioSubmitButtonWrapper,
   RadioTitleTypo,
   ResetButton,
   Root,
@@ -259,6 +260,11 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
         <ResetButton onClick={onClickResetButton}>초기화</ResetButton>
         <MainImg src={mainImgSrc} />
         <RadioContainer>
+          <RadioSubmitButtonWrapper>
+            {status === 'WAITING' && <RadioSubmitButton onClick={handleRecording}>말하기</RadioSubmitButton>}
+            {status === 'LISTEN' && <RadioSubmitButton onClick={handleStop}>듣기</RadioSubmitButton>}
+            {status === 'WAITING_TTS' && <WaitingTtsProgress tip="Loading" />}
+          </RadioSubmitButtonWrapper>
           <RadioTitleTypo>챗봇의 타입을 선택해주세요.</RadioTitleTypo>
           <RadioRowContainer onClick={() => setChatbotType('0')}>
             <RadioRowTypo>노인 케어 챗봇</RadioRowTypo>
@@ -277,9 +283,6 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
             <RadioRowTypo>여성</RadioRowTypo>
             <Radio name="genderTypeRadio" checked={genderType === '1'} />
           </RadioRowContainer>
-          {status === 'WAITING' && <RadioSubmitButton onClick={handleRecording}>말하기</RadioSubmitButton>}
-          {status === 'LISTEN' && <RadioSubmitButton onClick={handleStop}>듣기</RadioSubmitButton>}
-          {status === 'WAITING_TTS' && <WaitingTtsProgress tip="Loading" />}
         </RadioContainer>
       </Container>
     </Root>

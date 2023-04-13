@@ -47,9 +47,17 @@ export const RadioRowTypo = styled(Typography)`
   }
 `
 
+export const RadioSubmitButtonWrapper = styled.div`
+  width: 100%;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+`
+
 export const RadioSubmitButton = styled(Button)`
   width: 100%;
-  margin-top: 10px;
 `
 
 export const MainImg = styled.img`
