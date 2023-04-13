@@ -80,7 +80,7 @@ export const HeaderButtonContainer = styled.div`
 `
 
 export const ResetButton = styled(Button)`
-  width: 20vw;
+  min-width: 20vw;
   height: 8vw;
 `
 

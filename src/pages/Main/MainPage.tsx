@@ -7,9 +7,11 @@ import Main2Img from 'constants/images/main_2.png'
 import Main3Img from 'constants/images/main_3.png'
 import Main4Img from 'constants/images/main_4.png'
 import { FC, useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import RecordRTC, { StereoAudioRecorder } from 'recordrtc'
 import {
   Container,
+  HeaderButtonContainer,
   MainImg,
   RadioContainer,
   RadioRowContainer,
@@ -37,6 +39,11 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
   const [inputValue, setInputValue] = useState<string>('')
   const [status, setStatus] = useState<StatusType>('WAITING')
   const recorderRef = useRef<any>(null)
+  const navigate = useNavigate()
+
+  const onClickNavigateToListenButton = () => {
+    navigate('/listen')
+  }
 
   const handleStatus = (type: StatusType) => () => {
     setStatus(type)
@@ -257,7 +264,10 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
             {ttsAudio && <audio src={ttsAudio} controls autoPlay />}
           </div>
         )} */}
-        <ResetButton onClick={onClickResetButton}>초기화</ResetButton>
+        <HeaderButtonContainer>
+          <ResetButton onClick={onClickNavigateToListenButton}>계속 듣기</ResetButton>
+          <ResetButton onClick={onClickResetButton}>초기화</ResetButton>
+        </HeaderButtonContainer>
         <MainImg src={mainImgSrc} />
         <RadioContainer>
           <RadioSubmitButtonWrapper>
