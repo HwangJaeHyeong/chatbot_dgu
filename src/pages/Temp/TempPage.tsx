@@ -1,3 +1,4 @@
+import { MainPage } from 'pages/Main'
 import { FC, useEffect, useState } from 'react'
 import './style.css'
 
@@ -5,10 +6,13 @@ type TempPageProps = {
   className?: string
 }
 
+type ChatBotDisplayType = 'MEDICAL_CHATBOT' | 'DAILY_LIFE_CHATBOT'
+
 export const TempPage: FC<TempPageProps> = ({ className }) => {
   const [time, setTime] = useState('')
   const [date, setDate] = useState('')
   const [weather, setWeather] = useState({ temp: '', description: '' })
+  const [displayType, setDisplayType] = useState<ChatBotDisplayType>('MEDICAL_CHATBOT')
 
   const fetchWeatherData = async () => {
     const apiKey = 'f1cef7b165c88799efea5d7fb5b458d7'
@@ -31,6 +35,19 @@ export const TempPage: FC<TempPageProps> = ({ className }) => {
 
   const toggleMenu = () => {
     setShowMenu(!showMenu)
+    return
+  }
+
+  const onClickButtonMedicalChatBot = () => {
+    setDisplayType('MEDICAL_CHATBOT')
+    setShowMenu(false)
+    return
+  }
+
+  const onClickButtonDailyLifeChatBot = () => {
+    setDisplayType('DAILY_LIFE_CHATBOT')
+    setShowMenu(false)
+    return
   }
 
   useEffect(() => {
@@ -54,14 +71,19 @@ export const TempPage: FC<TempPageProps> = ({ className }) => {
           <div className="temperature">{weather.temp}</div>
           <div className="description">{weather.description}</div>
         </div>
+        {displayType === 'DAILY_LIFE_CHATBOT' && <MainPage />}
       </div>
       <div className="bottom-left" onClick={toggleMenu}>
         ITRC-DGU
       </div>
       {showMenu && (
         <div className="menu">
-          <div className="menu-item">Medical ChatBot</div>
-          <div className="menu-item">Daily Life Chatbot</div>
+          <div className="menu-item" onClick={onClickButtonMedicalChatBot}>
+            Medical ChatBot
+          </div>
+          <div className="menu-item" onClick={onClickButtonDailyLifeChatBot}>
+            Daily Life Chatbot
+          </div>
         </div>
       )}
     </div>
