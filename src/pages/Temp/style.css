@@ -45,6 +45,10 @@ html, body, #root {
   /* No change needed, uses the .weather styling */
 }
 
+.description {
+  /* If you want a separate style for the description */
+}
+
 /* Responsive font sizes for different devices */
 @media (max-width: 768px) {
   .App-header .time {
