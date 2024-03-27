@@ -1,0 +1,91 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: black;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  color: white;
+  background-color: black;
+  height: 100%;
+  align-items: flex-end;
+}
+
+.App-header {
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  text-align: right;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.time {
+  color: gold;
+  font-size: 3em; /* Double the font size for the time */
+  margin: 0;
+}
+
+.date {
+  color: gold;
+  font-size: 1.2em;
+  margin: 0;
+}
+
+.weather {
+  color: gold;
+  font-size: 1.2em;
+  margin: 0;
+}
+
+.temperature {
+  /* No change needed, uses the .weather styling */
+}
+
+/* Responsive font sizes for different devices */
+@media (max-width: 768px) {
+  .App-header .time {
+    font-size: 1.5em; /* Adjust for smaller devices */
+  }
+}
+
+@media (min-width: 769px) {
+  .App-header .time {
+    font-size: 3em; /* Adjust for larger devices */
+  }
+}
+
+.bottom-left {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  color: gold;
+  font-size: 1.2em;
+  cursor: pointer; /* Change cursor to indicate it's clickable */
+  z-index: 10; /* Ensure it's above other elements */
+}
+
+.menu {
+  position: absolute;
+  bottom: 60px; /* Position just above the ITRC-DGU text */
+  left: 20px;
+  background-color: black;
+  border: 1px solid gold;
+  z-index: 15; /* Higher than .bottom-left to appear on top */
+}
+
+.menu-item {
+  color: gold;
+  font-size: 1em;
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for color as well */
+}
+
+.menu-item:hover {
+  background-color: #ffd700; /* A bright shade of gold for the background */
+  color: black; /* A darker color for the text to ensure contrast */
+}

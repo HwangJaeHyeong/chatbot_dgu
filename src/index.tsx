@@ -1,6 +1,7 @@
 import 'antd/dist/reset.css'
 import { ListenPage } from 'pages/Listen'
 import { MainPage } from 'pages/Main'
+import { TempPage } from 'pages/Temp'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from 'react-query'
@@ -17,6 +18,7 @@ root.render(
       <BrowserRouter>
         <Routes>
           <Route path="/listen" element={<ListenPage />} />
+          <Route path="/temp" element={<TempPage />} />
           <Route path="/" element={<MainPage />} />
         </Routes>
       </BrowserRouter>
