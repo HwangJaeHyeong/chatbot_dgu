@@ -34,7 +34,7 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
   const [genderType, setGenderType] = useState<'0' | '1'>('0')
   const [chatbotType, setChatbotType] = useState<'0' | '1'>('0')
   const [blob, setBlob] = useState<any>(null)
-  const [dialog, setDialog] = useState<string[]>([])
+  const [dialog, setDialog] = useState<string>('')
   const [ttsAudio, setTtsAudio] = useState<any>()
   const [inputValue, setInputValue] = useState<string>('')
   const [status, setStatus] = useState<StatusType>('WAITING')
@@ -70,7 +70,7 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
   }
 
   const onClickResetButton = () => {
-    setDialog([])
+    setDialog('')
     setGenderType('0')
     setChatbotType('0')
     handleStatus('WAITING')()
@@ -94,26 +94,28 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
         .then((response) => {
           response.text().then((res) => {
             let text = JSON.parse(res)[0].transcription
-            setDialog((prev) => [...prev, text])
-
             var myHeaders = new Headers()
             myHeaders.append('Content-Type', 'application/json')
 
-            var raw =
-              chatbotType === '0'
-                ? JSON.stringify({
-                    text,
-                    dialog,
-                  })
-                : JSON.stringify({
-                    text,
-                    agent_state: {
-                      history: dialog,
-                      ontology_flow_num: -1,
-                      abnormal_flag: 0,
-                    },
-                  })
+            // var raw =
+            //   chatbotType === '0'
+            //     ? JSON.stringify({
+            //         input: text,
+            //         dialog,
+            //       })
+            //     : JSON.stringify({
+            //         input: text,
+            //         agent_state: {
+            //           history: dialog,
+            //           ontology_flow_num: -1,
+            //           abnormal_flag: 0,
+            //         },
+            //       })
 
+            var raw = JSON.stringify({
+              input: text,
+              history: dialog,
+            })
             var requestOptions: any = {
               method: 'POST',
               headers: myHeaders,
@@ -121,14 +123,40 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
               redirect: 'follow',
             }
 
-            fetch(`${baseURL}/tts/tts`, requestOptions)
-              .then(async (response) => {
-                const audioBlob = await response.blob()
-                const url = URL.createObjectURL(audioBlob)
-                const audioElement = new Audio(url)
-                audioElement.play()
-                handleStatus('WAITING')()
-              })
+            fetch(`${baseURL}/chat/chat`, requestOptions)
+              .then((response) =>
+                response.text().then((res2) => {
+                  let text2 = chatbotType === '0' ? JSON.parse(res2).output : JSON.parse(res2).response
+
+                  setDialog(() => JSON.parse(res2).dialog)
+
+                  var myHeaders = new Headers()
+                  myHeaders.append('Content-Type', 'application/json')
+
+                  var raw = JSON.stringify({
+                    text: text2,
+                    speaker: genderType,
+                  })
+
+                  var requestOptions: any = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    body: raw,
+                    redirect: 'follow',
+                  }
+
+                  fetch(`${baseURL}/tts/tts`, requestOptions)
+                    .then(async (response) => {
+                      const audioBlob = await response.blob()
+                      const url = URL.createObjectURL(audioBlob)
+                      const audioElement = new Audio(url)
+                      audioElement.play()
+                      handleStatus('WAITING')()
+                    })
+                    .then((result) => console.log(result))
+                    .catch((error) => console.log('error', error))
+                })
+              )
               .then((result) => console.log(result))
               .catch((error) => console.log('error', error))
           })
@@ -137,69 +165,6 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
         .catch((error) => console.log('error', error))
     }
   }, [blob])
-
-  const onClickSubmit = () => {
-    let text = inputValue
-    setDialog((prev) => [...prev, text])
-
-    var myHeaders = new Headers()
-    myHeaders.append('Content-Type', 'application/json')
-
-    var raw = JSON.stringify({
-      input: text,
-      dialog,
-    })
-
-    var requestOptions: any = {
-      method: 'POST',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow',
-    }
-
-    fetch(`${baseURL}/${chatbotType === '0' ? 'chat1' : 'chat2'}/chat`, requestOptions)
-      .then((response) =>
-        response.text().then((res2) => {
-          let text2 = JSON.parse(res2).output
-          let text3 = JSON.parse(res2).response
-          setDialog((prev) => [...prev, text2])
-
-          var myHeaders = new Headers()
-          myHeaders.append('Content-Type', 'application/json')
-
-          var raw =
-            chatbotType === '0'
-              ? JSON.stringify({
-                  text: text2,
-                  speaker: genderType,
-                })
-              : JSON.stringify({
-                  text: text3,
-                  speaker: genderType,
-                })
-
-          var requestOptions: any = {
-            method: 'POST',
-            headers: myHeaders,
-            body: raw,
-            redirect: 'follow',
-          }
-
-          fetch(`${baseURL}/tts/tts`, requestOptions)
-            .then(async (response) => {
-              const audioBlob = await response.blob()
-              const url = URL.createObjectURL(audioBlob)
-              setTtsAudio(url)
-              const audioElement = new Audio(url)
-              audioElement.play()
-            })
-            .then((result) => console.log(result))
-            .catch((error) => console.log('error', error))
-        })
-      )
-      .then((result) => console.log(result))
-      .catch((error) => console.log('error', error))
-  }
 
   const mainImgSrc = (() => {
     if (status === 'WAITING_TTS') {
