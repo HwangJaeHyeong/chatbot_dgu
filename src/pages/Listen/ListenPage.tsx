@@ -33,7 +33,7 @@ type StatusType = 'WAITING' | 'LISTEN' | 'WAITING_TTS' | 'TELL'
 export const ListenPage: FC<ListenPageProps> = ({ className }) => {
   const [genderType, setGenderType] = useState<'0' | '1'>('0')
   const [chatbotType, setChatbotType] = useState<'0' | '1'>('0')
-  const [dialog, setDialog] = useState<string[]>([])
+  const [dialog, setDialog] = useState<string>('')
   const [ttsAudio, setTtsAudio] = useState<any>()
   const [inputValue, setInputValue] = useState<string>('')
   const [status, setStatus] = useState<StatusType>('WAITING')
@@ -61,7 +61,7 @@ export const ListenPage: FC<ListenPageProps> = ({ className }) => {
   }
 
   const onClickResetButton = () => {
-    setDialog([])
+    setDialog('')
     setGenderType('0')
     setChatbotType('0')
     handleStatus('WAITING')()
@@ -71,26 +71,14 @@ export const ListenPage: FC<ListenPageProps> = ({ className }) => {
     if (transcript !== '' && !listening) {
       handleStatus('WAITING_TTS')()
       let text = transcript
-      setDialog((prev) => [...prev, text])
 
       var myHeaders = new Headers()
       myHeaders.append('Content-Type', 'application/json')
 
-      var raw =
-        chatbotType === '0'
-          ? JSON.stringify({
-              input: text,
-              dialog,
-            })
-          : JSON.stringify({
-              input: text,
-              agent_state: {
-                history: dialog,
-                ontology_flow_num: -1,
-                abnormal_flag: 0,
-              },
-            })
-
+      var raw = JSON.stringify({
+        input: text,
+        history: dialog,
+      })
       var requestOptions: any = {
         method: 'POST',
         headers: myHeaders,
@@ -98,11 +86,11 @@ export const ListenPage: FC<ListenPageProps> = ({ className }) => {
         redirect: 'follow',
       }
 
-      fetch(`${baseURL}/${chatbotType === '0' ? 'chat1' : 'chat2'}/chat`, requestOptions).then((response) =>
+      fetch(`${baseURL}/chat/chat`, requestOptions).then((response) =>
         response.text().then((res2) => {
           let text2 = chatbotType === '0' ? JSON.parse(res2).output : JSON.parse(res2).response
 
-          setDialog((prev) => [...prev, text2])
+          setDialog((prev) => JSON.parse(res2).dialog)
 
           var myHeaders = new Headers()
           myHeaders.append('Content-Type', 'application/json')
