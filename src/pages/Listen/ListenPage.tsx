@@ -51,7 +51,7 @@ export const ListenPage: FC<ListenPageProps> = ({ className }) => {
   }
 
   const handleRecording = () => {
-    SpeechRecognition?.startListening()
+    SpeechRecognition?.startListening({ language: 'ko' })
     handleStatus('LISTEN')()
   }
 
@@ -114,7 +114,7 @@ export const ListenPage: FC<ListenPageProps> = ({ className }) => {
               const audioElement = new Audio(url)
               audioElement.play()
               resetTranscript()
-              SpeechRecognition?.startListening()
+              SpeechRecognition?.startListening({ language: 'ko' })
               handleStatus('LISTEN')()
             })
             .then((result) => console.log(result))
