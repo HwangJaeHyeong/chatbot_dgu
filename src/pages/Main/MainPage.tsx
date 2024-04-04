@@ -102,11 +102,11 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
             var raw =
               chatbotType === '0'
                 ? JSON.stringify({
-                    input: text,
+                    text,
                     dialog,
                   })
                 : JSON.stringify({
-                    input: text,
+                    text,
                     agent_state: {
                       history: dialog,
                       ontology_flow_num: -1,
@@ -121,40 +121,14 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
               redirect: 'follow',
             }
 
-            fetch(`${baseURL}/${chatbotType === '0' ? 'chat1' : 'chat2'}/chat`, requestOptions)
-              .then((response) =>
-                response.text().then((res2) => {
-                  let text2 = chatbotType === '0' ? JSON.parse(res2).output : JSON.parse(res2).response
-
-                  setDialog((prev) => [...prev, text2])
-
-                  var myHeaders = new Headers()
-                  myHeaders.append('Content-Type', 'application/json')
-
-                  var raw = JSON.stringify({
-                    text: text2,
-                    speaker: genderType,
-                  })
-
-                  var requestOptions: any = {
-                    method: 'POST',
-                    headers: myHeaders,
-                    body: raw,
-                    redirect: 'follow',
-                  }
-
-                  fetch(`${baseURL}/tts/tts`, requestOptions)
-                    .then(async (response) => {
-                      const audioBlob = await response.blob()
-                      const url = URL.createObjectURL(audioBlob)
-                      const audioElement = new Audio(url)
-                      audioElement.play()
-                      handleStatus('WAITING')()
-                    })
-                    .then((result) => console.log(result))
-                    .catch((error) => console.log('error', error))
-                })
-              )
+            fetch(`${baseURL}/tts/tts`, requestOptions)
+              .then(async (response) => {
+                const audioBlob = await response.blob()
+                const url = URL.createObjectURL(audioBlob)
+                const audioElement = new Audio(url)
+                audioElement.play()
+                handleStatus('WAITING')()
+              })
               .then((result) => console.log(result))
               .catch((error) => console.log('error', error))
           })
