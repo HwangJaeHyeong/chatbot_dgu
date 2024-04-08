@@ -174,7 +174,7 @@ export const FeelPage: FC<FeelPageProps> = ({ className }) => {
     <Root className={className}>
       <Container>
         <HeaderButtonContainer>
-          <ResetButton onClick={onClickNavigateToListenButton}>계속 듣기</ResetButton>
+          {/* <ResetButton onClick={onClickNavigateToListenButton}>계속 듣기</ResetButton> */}
           <ResetButton onClick={onClickResetButton}>초기화</ResetButton>
         </HeaderButtonContainer>
         <MainImg src={mainImgSrc} />
@@ -193,7 +193,7 @@ export const FeelPage: FC<FeelPageProps> = ({ className }) => {
             <RadioRowTypo>공황장애 환자 케어 챗봇</RadioRowTypo>
             <Radio name="chatbotTypeRadio" checked={true} />
           </RadioRowContainer>
-          <RadioTitleTypo>챗봇의 성별을 선택해주세요.</RadioTitleTypo>
+          {/* <RadioTitleTypo>챗봇의 성별을 선택해주세요.</RadioTitleTypo>
           <RadioRowContainer onClick={() => setGenderType('0')}>
             <RadioRowTypo>남성</RadioRowTypo>
             <Radio name="genderTypeRadio" checked={genderType === '0'} />
@@ -201,7 +201,7 @@ export const FeelPage: FC<FeelPageProps> = ({ className }) => {
           <RadioRowContainer onClick={() => setGenderType('1')}>
             <RadioRowTypo>여성</RadioRowTypo>
             <Radio name="genderTypeRadio" checked={genderType === '1'} />
-          </RadioRowContainer>
+          </RadioRowContainer> */}
         </RadioContainer>
       </Container>
     </Root>
