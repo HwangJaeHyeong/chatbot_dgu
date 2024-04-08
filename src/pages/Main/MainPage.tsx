@@ -216,11 +216,11 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
           </RadioSubmitButtonWrapper>
           <RadioTitleTypo>챗봇의 타입을 선택해주세요.</RadioTitleTypo>
           <RadioRowContainer onClick={() => navigate('/')}>
-            <RadioRowTypo>노인 케어 챗봇</RadioRowTypo>
+            <RadioRowTypo>일상 대화 챗봇</RadioRowTypo>
             <Radio name="chatbotTypeRadio" checked={true} />
           </RadioRowContainer>
           <RadioRowContainer onClick={() => navigate('/feel')}>
-            <RadioRowTypo>공황장애 환자 케어 챗봇</RadioRowTypo>
+            <RadioRowTypo>우울증 상담 챗봇</RadioRowTypo>
             <Radio name="chatbotTypeRadio" checked={false} />
           </RadioRowContainer>
           {/* <RadioTitleTypo>챗봇의 성별을 선택해주세요.</RadioTitleTypo>
