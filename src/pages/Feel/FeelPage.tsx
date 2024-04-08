@@ -24,17 +24,21 @@ import {
   WaitingTtsProgress,
 } from './styled'
 
-type MainPageProps = {
+type FeelPageProps = {
   className?: string
 }
 
 type StatusType = 'WAITING' | 'LISTEN' | 'WAITING_TTS' | 'TELL'
+type DialogType = {
+  text: string[]
+  score: any
+}
 
-export const MainPage: FC<MainPageProps> = ({ className }) => {
+export const FeelPage: FC<FeelPageProps> = ({ className }) => {
   const [genderType, setGenderType] = useState<'0' | '1'>('0')
   const [chatbotType, setChatbotType] = useState<'0' | '1'>('0')
   const [blob, setBlob] = useState<any>(null)
-  const [dialog, setDialog] = useState<string>('')
+  const [dialog, setDialog] = useState<DialogType>({ text: [], score: {} })
   const [ttsAudio, setTtsAudio] = useState<any>()
   const [inputValue, setInputValue] = useState<string>('')
   const [status, setStatus] = useState<StatusType>('WAITING')
@@ -70,7 +74,7 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
   }
 
   const onClickResetButton = () => {
-    setDialog('')
+    setDialog({ text: [], score: {} })
     setGenderType('0')
     setChatbotType('0')
     handleStatus('WAITING')()
@@ -97,23 +101,8 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
             var myHeaders = new Headers()
             myHeaders.append('Content-Type', 'application/json')
 
-            // var raw =
-            //   chatbotType === '0'
-            //     ? JSON.stringify({
-            //         input: text,
-            //         dialog,
-            //       })
-            //     : JSON.stringify({
-            //         input: text,
-            //         agent_state: {
-            //           history: dialog,
-            //           ontology_flow_num: -1,
-            //           abnormal_flag: 0,
-            //         },
-            //       })
-
             var raw = JSON.stringify({
-              input: text,
+              text,
               history: dialog,
             })
             var requestOptions: any = {
@@ -123,18 +112,20 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
               redirect: 'follow',
             }
 
-            fetch(`${baseURL}/chat/chat`, requestOptions)
+            fetch(`${baseURL}/phqchat/phqchat`, requestOptions)
               .then((response) =>
                 response.text().then((res2) => {
-                  let text2 = chatbotType === '0' ? JSON.parse(res2).output : JSON.parse(res2).response
+                  let text2 = JSON.parse(res2)
 
-                  setDialog(() => JSON.parse(res2).dialog)
+                  console.log({ text2 })
+
+                  setDialog(() => JSON.parse(res2).history)
 
                   var myHeaders = new Headers()
                   myHeaders.append('Content-Type', 'application/json')
 
                   var raw = JSON.stringify({
-                    text: text2,
+                    text: text2.text[0],
                     speaker: genderType,
                   })
 
@@ -184,25 +175,6 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
   return (
     <Root className={className}>
       <Container>
-        {/* {status !== 'INIT' && genderType && chatbotType && (
-          <div>
-            <div>
-              <button onClick={handleRecording}>start</button>
-              <button onClick={handleStop}>stop</button>
-              <button onClick={onClickResetButton}>reset</button>
-            </div>
-            <div>
-              <input
-                onChange={(e) => setInputValue(e.target.value)}
-                value={inputValue}
-                onKeyDown={(e) => e.key === 'Enter' && onClickSubmit()}
-              />
-              <button onClick={onClickSubmit}>submit</button>
-            </div>
-            <p>{response}</p>
-            {ttsAudio && <audio src={ttsAudio} controls autoPlay />}
-          </div>
-        )} */}
         <HeaderButtonContainer>
           <ResetButton onClick={onClickNavigateToListenButton}>계속 듣기</ResetButton>
           <ResetButton onClick={onClickResetButton}>초기화</ResetButton>
@@ -217,11 +189,11 @@ export const MainPage: FC<MainPageProps> = ({ className }) => {
           <RadioTitleTypo>챗봇의 타입을 선택해주세요.</RadioTitleTypo>
           <RadioRowContainer onClick={() => navigate('/')}>
             <RadioRowTypo>노인 케어 챗봇</RadioRowTypo>
-            <Radio name="chatbotTypeRadio" checked={true} />
+            <Radio name="chatbotTypeRadio" checked={false} />
           </RadioRowContainer>
           <RadioRowContainer onClick={() => navigate('/feel')}>
             <RadioRowTypo>공황장애 환자 케어 챗봇</RadioRowTypo>
-            <Radio name="chatbotTypeRadio" checked={false} />
+            <Radio name="chatbotTypeRadio" checked={true} />
           </RadioRowContainer>
           <RadioTitleTypo>챗봇의 성별을 선택해주세요.</RadioTitleTypo>
           <RadioRowContainer onClick={() => setGenderType('0')}>
