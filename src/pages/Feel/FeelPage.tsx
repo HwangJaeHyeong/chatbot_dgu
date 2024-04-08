@@ -117,8 +117,6 @@ export const FeelPage: FC<FeelPageProps> = ({ className }) => {
                 response.text().then((res2) => {
                   let text2 = JSON.parse(res2)
 
-                  console.log({ text2 })
-
                   setDialog(() => JSON.parse(res2).history)
 
                   var myHeaders = new Headers()
