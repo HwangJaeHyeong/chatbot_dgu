@@ -24,16 +24,21 @@ import {
   WaitingTtsProgress,
 } from './styled'
 
-type ListenPageProps = {
+type ListenFeelPageProps = {
   className?: string
 }
 
 type StatusType = 'WAITING' | 'LISTEN' | 'WAITING_TTS' | 'TELL'
 
-export const ListenPage: FC<ListenPageProps> = ({ className }) => {
+type DialogType = {
+  text: string[]
+  score: any
+}
+
+export const ListenFeelPage: FC<ListenFeelPageProps> = ({ className }) => {
   const [genderType, setGenderType] = useState<'0' | '1'>('0')
   const [chatbotType, setChatbotType] = useState<'0' | '1'>('0')
-  const [dialog, setDialog] = useState<string>('')
+  const [dialog, setDialog] = useState<DialogType>({ text: [], score: {} })
   const [ttsAudio, setTtsAudio] = useState<any>()
   const [inputValue, setInputValue] = useState<string>('')
   const [status, setStatus] = useState<StatusType>('WAITING')
@@ -61,7 +66,7 @@ export const ListenPage: FC<ListenPageProps> = ({ className }) => {
   }
 
   const onClickResetButton = () => {
-    setDialog('')
+    setDialog({ text: [], score: {} })
     setGenderType('0')
     setChatbotType('0')
     handleStatus('WAITING')()
@@ -76,7 +81,7 @@ export const ListenPage: FC<ListenPageProps> = ({ className }) => {
       myHeaders.append('Content-Type', 'application/json')
 
       var raw = JSON.stringify({
-        input: text,
+        text,
         history: dialog,
       })
       var requestOptions: any = {
@@ -86,17 +91,17 @@ export const ListenPage: FC<ListenPageProps> = ({ className }) => {
         redirect: 'follow',
       }
 
-      fetch(`${baseURL}/chat/chat`, requestOptions).then((response) =>
+      fetch(`${baseURL}/phqchat/phqchat`, requestOptions).then((response) =>
         response.text().then((res2) => {
-          let text2 = chatbotType === '0' ? JSON.parse(res2).output : JSON.parse(res2).response
+          let text2 = JSON.parse(res2)
 
-          setDialog((prev) => JSON.parse(res2).dialog)
+          setDialog(() => JSON.parse(res2).history)
 
           var myHeaders = new Headers()
           myHeaders.append('Content-Type', 'application/json')
 
           var raw = JSON.stringify({
-            text: text2,
+            text: text2.text[0],
             speaker: genderType,
           })
 
@@ -155,11 +160,11 @@ export const ListenPage: FC<ListenPageProps> = ({ className }) => {
           <RadioTitleTypo>챗봇의 타입을 선택해주세요.</RadioTitleTypo>
           <RadioRowContainer onClick={() => navigate('/listen')}>
             <RadioRowTypo>일상 대화 챗봇</RadioRowTypo>
-            <Radio name="chatbotTypeRadio" checked={true} />
+            <Radio name="chatbotTypeRadio" checked={false} />
           </RadioRowContainer>
           <RadioRowContainer onClick={() => navigate('/listen/feel')}>
             <RadioRowTypo>우울증 상담 챗봇</RadioRowTypo>
-            <Radio name="chatbotTypeRadio" checked={false} />
+            <Radio name="chatbotTypeRadio" checked={true} />
           </RadioRowContainer>
         </RadioContainer>
       </Container>
